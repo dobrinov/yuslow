@@ -42,3 +42,10 @@ Thread[1]:
       Object#root_cause elapsed 1000 ms
         Kernel#sleep elapsed 1000 ms
 ```
+
+## Parameters
+| Parameter     | Options           | Default   | Description                                         |
+|---------------|-------------------|-----------|-----------------------------------------------------|
+| **output**    | `false` `:stdout` | `:stdout` | Defines how the profiling results will be presented |
+| **max_level** | `number` `nil`   | `nil`     | Specifies maximum profiling depth                   |
+| **debug**     | `true` `false`    | `false`   | Prints debug information while profiling            |

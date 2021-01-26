@@ -28,7 +28,7 @@ module Yuslow
         output << "#{indentation}#{identifier} elapsed #{elapsed} ms"
       else
         text = "#{operation.identifier} did not finish"
-        colorize(text, :red) if colorize
+        colorize(text, :yellow) if colorize
 
         output << "#{indentation}#{text}"
       end
@@ -46,6 +46,7 @@ module Yuslow
         when :black    then '30'
         when :red      then '31'
         when :green    then '32'
+        when :yellow   then '33'
         when :white    then '1;37'
         when :bg_black then '40'
         when :bg_red   then '41'

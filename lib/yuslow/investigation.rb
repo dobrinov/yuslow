@@ -1,44 +1,58 @@
 module Yuslow
   class Investigation
-    def initialize(debug: false, printer: nil)
+    def initialize(debug: false, printer: nil, max_depth:)
+      if max_depth
+        raise ArgumentError, 'max_depth must be a number'      if !max_depth.is_a? Numeric
+        raise ArgumentError, 'max_depth cannot be less than 1' if max_depth < 1
+      end
+
       @printer = printer
       @debug = debug
       @tracing = false
       @trace = nil
-      @indent = 0
+      @max_depth = max_depth
       @execution = {}
     end
 
     def start
       @trace = TracePoint.new(:call, :return, :c_call, :c_return) do |trace_point|
         thread_id = Thread.current.object_id
-        @execution[thread_id] ||= {root: nil, current: nil}
+        @execution[thread_id] ||= {root: nil, current: nil, depth: 0}
 
-        if trace_point.defined_class == self.class && trace_point.callee_id == :start
-          @tracing = true
-        elsif trace_point.defined_class == self.class && trace_point.callee_id == :finish
-          @tracing = false
+        if trace_point.defined_class == self.class
+          if trace_point.callee_id == :start
+            @tracing = true
+          elsif trace_point.callee_id == :finish
+            @tracing = false
+          else
+            raise "Unexpected method #{trace_point.callee_id} called on #{self.class}"
+          end
         elsif @tracing
-          if %i(call c_call).include? trace_point.event
-            if @execution[thread_id][:current]
-              @execution[thread_id][:current] =
-                @execution[thread_id][:current].fork object: trace_point.defined_class,
-                                                     method: trace_point.callee_id
-            else
-              operation = Operation.new object: trace_point.defined_class, method: trace_point.callee_id
-              @execution[thread_id][:root]    = operation
-              @execution[thread_id][:current] = operation
+          if %i(call c_call).include?(trace_point.event)
+            if !@max_depth || @execution[thread_id][:depth] < @max_depth
+              if @execution[thread_id][:current]
+                @execution[thread_id][:current] = @execution[thread_id][:current].fork object: trace_point.defined_class,
+                                                                                       method: trace_point.callee_id
+              else
+                operation = Operation.new object: trace_point.defined_class, method: trace_point.callee_id
+                @execution[thread_id][:root]    = operation
+                @execution[thread_id][:current] = operation
+              end
+
+              debug trace_point, @execution[thread_id][:depth]
+              @execution[thread_id][:depth] += 1
             end
-
-            debug trace_point, @indent
-            @indent += 1
-
           elsif %i(return c_return).include? trace_point.event
-            @indent -= 1
-            debug trace_point, @indent
+            if @execution[thread_id][:current]&.identifier == "#{trace_point.defined_class}##{trace_point.callee_id}"
+              @execution[thread_id][:depth] -= 1
 
-            @execution[thread_id][:current]&.complete
-            @execution[thread_id][:current] = @execution[thread_id][:current]&.parent
+              if !@max_depth || @execution[thread_id][:depth] < @max_depth
+                debug trace_point, @execution[thread_id][:depth]
+
+                @execution[thread_id][:current]&.complete
+                @execution[thread_id][:current] = @execution[thread_id][:current]&.parent
+              end
+            end
           end
         end
       end
@@ -64,7 +78,7 @@ module Yuslow
       operations =
         @execution.keys.map do |thread_id|
           @execution[thread_id][:root]
-        end
+        end.compact
 
       printer.execute operations
     end

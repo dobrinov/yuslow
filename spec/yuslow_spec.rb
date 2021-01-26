@@ -32,4 +32,18 @@ describe Yuslow do
       Yuslow.run(output: :stdout) { Dummy.execute }
     end.to output(expected).to_stdout
   end
+
+  it 'limits depth' do
+    expected =
+      <<~OUTPUT
+        Thread[1]:
+          \e[32m#<Class:Dummy>#execute\e[0m elapsed \e[1;37m0\e[0m ms
+            \e[32mClass#new\e[0m elapsed \e[1;37m0\e[0m ms
+            \e[32mDummy#execute\e[0m elapsed \e[1;37m0\e[0m ms
+      OUTPUT
+
+    expect do
+      Yuslow.run(output: :stdout, max_depth: 2) { Dummy.execute }
+    end.to output(expected).to_stdout
+  end
 end
