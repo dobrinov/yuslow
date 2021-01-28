@@ -10,9 +10,10 @@ module Yuslow
 
     investigation = Investigation.new debug: debug, printer: printer_from(output), max_depth: max_depth
     investigation.start
-    yield
+    result = yield
     investigation.finish
     investigation
+    result
   end
 
   def investigation(debug: false, output: nil, max_depth: nil)

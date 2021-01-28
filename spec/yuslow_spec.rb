@@ -5,6 +5,10 @@ describe Yuslow do
     Yuslow.run(output: false) { Dummy.execute }
   end
 
+  it 'returns the return value of the block' do
+    expect(Yuslow.run(output: false) { 'foo' }).to eq 'foo'
+  end
+
   it 'is executed with explicit commands' do
     investigation = Yuslow.investigation output: false
 
