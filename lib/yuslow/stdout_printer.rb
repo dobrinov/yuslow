@@ -28,7 +28,7 @@ module Yuslow
         output << "#{indentation}#{identifier} elapsed #{elapsed} ms"
       else
         text = "#{operation.identifier} did not finish"
-        colorize(text, :yellow) if colorize
+        text = colorize(text, :yellow) if colorize
 
         output << "#{indentation}#{text}"
       end
