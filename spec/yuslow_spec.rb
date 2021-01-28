@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe Yuslow do
   it 'is executed via block' do
-    Yuslow.run(output: false) { Dummy.execute }
+    Yuslow.investigate(output: false) { Dummy.execute }
   end
 
   it 'returns the return value of the block' do
-    expect(Yuslow.run(output: false) { 'foo' }).to eq 'foo'
+    expect(Yuslow.investigate(output: false) { 'foo' }).to eq 'foo'
   end
 
   it 'is executed with explicit commands' do
@@ -33,7 +33,7 @@ describe Yuslow do
       OUTPUT
 
     expect do
-      Yuslow.run(output: :stdout) { Dummy.execute }
+      Yuslow.investigate(output: :stdout) { Dummy.execute }
     end.to output(expected).to_stdout
   end
 
@@ -47,7 +47,7 @@ describe Yuslow do
       OUTPUT
 
     expect do
-      Yuslow.run(output: :stdout, max_depth: 2) { Dummy.execute }
+      Yuslow.investigate(output: :stdout, max_depth: 2) { Dummy.execute }
     end.to output(expected).to_stdout
   end
 end

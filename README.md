@@ -17,7 +17,7 @@ require 'yuslow'
 then add
 
 ```ruby
-Yuslow.run do
+Yuslow.investigate do
   a_very_slow_method
 end
 ```

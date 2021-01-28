@@ -5,7 +5,7 @@ require_relative 'yuslow/stdout_printer'
 module Yuslow
   extend self
 
-  def run(debug: false, output: nil, max_depth: nil)
+  def investigate(debug: false, output: nil, max_depth: nil)
     raise 'Block expected' unless block_given?
 
     investigation = Investigation.new debug: debug, printer: printer_from(output), max_depth: max_depth
